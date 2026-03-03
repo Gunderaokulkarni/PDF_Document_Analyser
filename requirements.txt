@@ -6,4 +6,5 @@ langchain-community
 pydantic
 langgraph
 httpx
-PyPDF2
+
+pypdf==3.14.0

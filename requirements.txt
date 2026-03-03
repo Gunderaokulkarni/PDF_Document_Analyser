@@ -1,5 +1,5 @@
 
-
+faiss-cpu>=1.7.4
 torch>=2.5.0
 sentence-transformers>=2.2.2
 transformers>=4.35.0
@@ -16,6 +16,7 @@ langgraph
 httpx
 langchain_groq
 pypdf==3.14.0
+
 
 
 

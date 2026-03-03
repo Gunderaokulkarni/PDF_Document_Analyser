@@ -1,12 +1,12 @@
 
 
-streamlit==1.30.0
-pypdf==3.14.0
-langchain==0.1.1  # or your current version
-langchain_community==0.0.10  # check version you use
-sentence-transformers==2.2.2
-transformers==4.35.0
-torch==2.2.0  # required by sentence-transformers
+torch>=2.5.0
+sentence-transformers>=2.2.2
+transformers>=4.35.0
+langchain>=0.1.1
+langchain_community>=0.0.10
+pypdf>=3.14.0
+streamlit>=1.54.0
 
 streamlit
 langchain-core
@@ -16,5 +16,6 @@ langgraph
 httpx
 langchain_groq
 pypdf==3.14.0
+
 
 

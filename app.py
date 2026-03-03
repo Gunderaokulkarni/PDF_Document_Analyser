@@ -1,118 +1,52 @@
-from PyPDF2 import PdfReader
-from pypdf import PdfReader
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_community.vectorstores import FAISS
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_groq import ChatGroq
-import os
+import streamlit as st
+from langchain_core.messages import AIMessage, HumanMessage
+from utils import user_input, get_pdf_text, get_text_chunks, get_vector_store, get_conversational_chain
 
-# -----------------------------
-# PDF TEXT.
-# -----------------------------
-def get_pdf_text(pdf_docs):
-    text = ""
-    for pdf in pdf_docs:
-        reader = PdfReader(pdf)
-        for page in reader.pages:
-            text += page.extract_text() or ""
-    return text
+st.set_page_config(page_title="ChatPDF", page_icon='📃')
 
+st.header("Chat with Multiple PDF Documents")
 
-# -----------------------------
-# CHUNKING
-# -----------------------------
-def get_text_chunks(text):
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
-    )
-    return splitter.split_text(text)
+# initialize session state
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = [
+        AIMessage(content="Hello there👋, I can help you with your PDF's. Upload any PDF and we can chat.")
+    ]
 
+# Display chat history
+for message in st.session_state.chat_history:
+    if isinstance(message, AIMessage):
+        with st.chat_message('AI'):
+            st.info(message.content)
+    elif isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.markdown(message.content)
 
-# -----------------------------
-# VECTOR STORE
-# -----------------------------
-def get_vector_store(text_chunks):
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-
-    db = FAISS.from_texts(text_chunks, embeddings)
-
-    save_path = os.path.join(os.getcwd(), "faiss_index")
-    db.save_local(save_path)
+# accept user input
+user_question = st.chat_input("start chatting with your pdf")
+if user_question is not None and user_question != "":
+    st.session_state.chat_history.append(HumanMessage(content=user_question))
+    
+    with st.chat_message("Human"):
+        st.markdown(user_question)
+        
+    response = user_input(user_question, st.session_state.chat_history)
+    
+    # Remove any unwanted prefixes from the response
+    response = response.replace("AI response:", "").replace("chat response:", "").replace("bot response:", "").strip()
+ 
+    with st.chat_message("AI"):
+        st.write(response)
+        
+    st.session_state.chat_history.append(AIMessage(content=response))
 
 
-# -----------------------------
-# CHAIN
-# -----------------------------
-def get_conversational_chain():
+with st.sidebar:
+    st.title("Menu")
+    pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
+    if st.button("Submit & Process"):
+        with st.spinner("Processing"):
+            raw_text = get_pdf_text(pdf_docs)
+            text_chunks = get_text_chunks(raw_text)
+            get_vector_store(text_chunks)
+            st.success("Done")
 
-    prompt_template = """
-    Answer the question using the provided context.
-    If answer is not in context, say "answer is not available in the context".
-
-    Chat History:
-    {chat_history}
-
-    Context:
-    {context}
-
-    Question:
-    {question}
-
-    Answer:
-    """
-   
-    model = ChatGroq(
-        model_name="llama-3.1-8b-instant",
-        temperature=0.5,
-        api_key=os.getenv("GROQ_API_KEY")   # BEST PRACTICE
-    )
-
-    prompt = PromptTemplate(
-        template=prompt_template,
-        input_variables=["chat_history", "context", "question"]
-    )
-
-    chain = prompt | model | StrOutputParser()
-
-    return chain
-
-
-# -----------------------------
-# USER QUERY
-# -----------------------------
-def user_input(user_question, chat_history):
-
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-
-    db_path = os.path.join(os.getcwd(), "faiss_index")
-
-    if not os.path.exists(db_path):
-        return "Please upload and process a PDF first."
-
-    db = FAISS.load_local(
-        db_path,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
-
-    docs = db.similarity_search(user_question)
-
-    # ✅ Convert docs → string
-    context = "\n".join([doc.page_content for doc in docs])
-
-    chain = get_conversational_chain()
-
-    response = chain.invoke({
-        "chat_history": chat_history,
-        "context": context,
-        "question": user_question
-    })
-
-    return response

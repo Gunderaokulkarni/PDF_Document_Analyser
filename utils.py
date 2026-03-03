@@ -1,6 +1,7 @@
 from PyPDF2 import PdfReader
 from pypdf import PdfReader
 from langchain_community.embeddings import HuggingFaceEmbeddings
+
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
@@ -87,7 +88,7 @@ def get_conversational_chain():
 # -----------------------------
 def user_input(user_question, chat_history):
 
-    embeddings = HuggingFaceEmbeddings(
+        embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 

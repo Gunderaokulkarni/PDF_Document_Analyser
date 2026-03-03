@@ -6,5 +6,6 @@ langchain-community
 pydantic
 langgraph
 httpx
-
+langchain_groq
 pypdf==3.14.0
+

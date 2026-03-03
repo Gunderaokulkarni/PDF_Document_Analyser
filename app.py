@@ -4,12 +4,12 @@ from utils import user_input, get_pdf_text, get_text_chunks, get_vector_store, g
 
 st.set_page_config(page_title="ChatPDF", page_icon='📃')
 
-st.header("Chat with Multiple PDF Documents")
+st.header("Chat with your PDF Documents")
 
 # initialize session state
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = [
-        AIMessage(content="Hello there👋, I can help you with your PDF's. Upload any PDF and we can chat.")
+        AIMessage(content="Hello, Upload your PDF and we can chat.")
     ]
 
 # Display chat history
@@ -42,7 +42,7 @@ if user_question is not None and user_question != "":
 
 with st.sidebar:
     st.title("Menu")
-    pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
+    pdf_docs = st.file_uploader("Upload your PDF File and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
     if st.button("Submit & Process"):
         with st.spinner("Processing"):
             raw_text = get_pdf_text(pdf_docs)

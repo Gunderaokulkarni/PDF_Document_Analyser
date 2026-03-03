@@ -7,7 +7,10 @@ from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 import os
-import config  # ✅ correct
+from dotenv import load_dotenv
+load_dotenv()
+
+os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
 # -----------------------------
 # PDF TEXT.
 # -----------------------------

@@ -1,17 +1,17 @@
+
+import os
+
+
 from dotenv import load_dotenv
 import os
 
-# load configuration fot environment variables
-import os
-from dotenv import load_dotenv
-load_dotenv() ## aloading all the environment variable
+# Load environment variables from .env (for local dev)
+load_dotenv()
 
-# os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
-
-import os
-
-# Load GROQ API key from environment (Streamlit secrets are automatically loaded)
+# Fetch the API key safely
 groq_api_key = os.getenv("GROQ_API_KEY")
 if not groq_api_key:
-    raise ValueError("GROQ_API_KEY is not set! Check your Streamlit secrets.")
+    raise ValueError("GROQ_API_KEY is missing! Please set it in .env or Streamlit Secrets.")
+
+# Assign to os.environ if needed
 os.environ["GROQ_API_KEY"] = groq_api_key

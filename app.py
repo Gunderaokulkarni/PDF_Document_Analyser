@@ -9,7 +9,7 @@ from langchain_groq import ChatGroq
 import os
 from config import load_dotenv
 # -----------------------------
-# PDF TEXT
+# PDF TEXT.
 # -----------------------------
 def get_pdf_text(pdf_docs):
     text = ""

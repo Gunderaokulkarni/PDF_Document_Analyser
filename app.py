@@ -4,7 +4,7 @@ from utils import user_input, get_pdf_text, get_text_chunks, get_vector_store, g
 
 st.set_page_config(page_title="ChatPDF", page_icon='📃')
 
-st.header("Chat with your PDF Documents")
+st.header("Chat with your PDF Documents: sunglasses:")
 
 # initialize session state
 if "chat_history" not in st.session_state:

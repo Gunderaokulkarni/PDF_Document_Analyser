@@ -42,8 +42,8 @@ if user_question is not None and user_question != "":
 
 with st.sidebar:
     st.title("Menu")
-    pdf_docs = st.file_uploader("Upload your PDF File and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
-    if st.button("Submit & Process"):
+    pdf_docs = st.file_uploader("Upload your PDF File and Click on the Submit Button", type="pdf", accept_multiple_files=True)
+    if st.button("Submit"):
         with st.spinner("Processing"):
             raw_text = get_pdf_text(pdf_docs)
             text_chunks = get_text_chunks(raw_text)

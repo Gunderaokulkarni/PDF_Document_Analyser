@@ -21,7 +21,7 @@ for message in st.session_state.chat_history:
             st.markdown(message.content)
 
 # accept user input
-user_question = st.chat_input("start chatting with your pdf")
+user_question = st.chat_input("Ask your Questions with your PDF")
 if user_question is not None and user_question != "":
     st.session_state.chat_history.append(HumanMessage(content=user_question))
     

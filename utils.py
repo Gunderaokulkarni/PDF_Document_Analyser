@@ -1,4 +1,3 @@
-from PyPDF2 import PdfReader
 from pypdf import PdfReader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate

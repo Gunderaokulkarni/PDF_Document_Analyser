@@ -8,7 +8,7 @@ st.header("Chat with your PDF Document:sunglasses:")
 # initialize session state
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = [
-        AIMessage(content="Hello, Upload your PDF and we can chat.")
+        AIMessage(content="Hello, Upload your PDF and we can have chat.")
     ]
 
 # Display chat history

@@ -108,7 +108,7 @@ def user_input(user_question, chat_history):
 
     response = chain.invoke({
         "chat_history": chat_history,
-        "context": context or " No context available"
+        "context": context,
         "question": user_question
     })
 

@@ -48,7 +48,7 @@ def get_conversational_chain():
 
     prompt_template = """
     Answer the question using the provided context.
-    If answer is not in context, say "answer is not available in the context/PDF".
+    If answer is not in context, say "answer is not available in the context".
 
     Chat History:
     {chat_history}

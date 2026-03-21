@@ -46,21 +46,11 @@ def get_vector_store(text_chunks):
 # -----------------------------
 def get_conversational_chain():
 
-    prompt_template = """
-    Answer the question using the provided context.
-    If answer is not in context, say "answer is not available in the context".
-
-    Chat History:
-    {chat_history}
-
-    Context:
-    {context}
-
-    Question:
-    {question}
-
-    Answer:
-    """
+    def format_chat_history(chat_history):
+    formatted = ""
+    for human, ai in chat_history:
+        formatted += f"User: {human}\nAssistant: {ai}\n"
+    return formatted
    
     model = ChatGroq(
         model_name="llama-3.1-8b-instant",

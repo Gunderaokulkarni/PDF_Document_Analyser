@@ -8,7 +8,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 import os
 
-# Load environment variables
 load_dotenv()
 
 
@@ -50,24 +49,24 @@ def get_vector_store(text_chunks):
 
 
 # -----------------------------
-# FORMAT CHAT HISTORY
+# FORMAT CHAT HISTORY (FIXED)
 # -----------------------------
 def format_chat_history(chat_history):
-    formatted = []
+    formatted = ""
     for human, ai in chat_history:
-        formatted.append({"role": "user", "content": human})
-        formatted.append({"role": "assistant", "content": ai})
+        formatted += f"User: {human}\nAssistant: {ai}\n"
     return formatted
 
 
 # -----------------------------
-# CHAIN
+# LLM CHAIN
 # -----------------------------
 def get_conversational_chain():
 
     prompt_template = """
     Answer the question using the provided context.
-    If answer is not in context, say "answer is not available in the context".
+    If the answer is not in the context, say:
+    "Answer is not available in the context."
 
     Chat History:
     {chat_history}
@@ -82,7 +81,7 @@ def get_conversational_chain():
     """
 
     model = ChatGroq(
-        model_name="qwen/qwen3-32b",
+        model="qwen/qwen3-32b",
         temperature=0.3,
         api_key=os.getenv("GROQ_API_KEY")
     )
@@ -102,6 +101,9 @@ def get_conversational_chain():
 # -----------------------------
 def user_input(user_question, chat_history):
 
+    if not user_question.strip():
+        return "Please enter a valid question."
+
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
@@ -117,18 +119,21 @@ def user_input(user_question, chat_history):
         allow_dangerous_deserialization=True
     )
 
-    # ✅ NEW STYLE (LangChain latest)
     retriever = db.as_retriever(search_kwargs={"k": 5})
     docs = retriever.invoke(user_question)
 
     context = "\n".join([doc.page_content for doc in docs])
+    context = context if context else "No relevant context found."
+    context = context[:5000]
+
+    formatted_history = format_chat_history(chat_history)
 
     chain = get_conversational_chain()
 
-    chain.invoke({
-    "context": context,
-    "chat_history": chat_history,
-    "question": user_question
-})
+    response = chain.invoke({
+        "context": context,
+        "chat_history": formatted_history,
+        "question": user_question
+    })
 
     return response

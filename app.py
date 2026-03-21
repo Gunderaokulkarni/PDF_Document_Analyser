@@ -12,12 +12,13 @@ if "chat_history" not in st.session_state:
     ]
 
 # Display chat history
+# FIX DISPLAY LABELS
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
-        with st.chat_message('AI'):
+        with st.chat_message('assistant'):   # ✅ FIX
             st.info(message.content)
     elif isinstance(message, HumanMessage):
-        with st.chat_message("Human"):
+        with st.chat_message("user"):        # ✅ FIX
             st.markdown(message.content)
 
 # accept user input

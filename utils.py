@@ -93,7 +93,7 @@ def get_conversational_chain():
     """
 
     model = ChatGroq(
-        model_name="llama-3.1-8b-instant",
+        model_name="llama3-8b-8192",
         temperature=0.5,
         api_key=os.getenv("GROQ_API_KEY")
     )

@@ -53,8 +53,26 @@ def get_vector_store(text_chunks):
 # -----------------------------
 def format_chat_history(chat_history):
     formatted = ""
-    for human, ai in chat_history:
-        formatted += f"User: {human}\nAssistant: {ai}\n"
+
+    for item in chat_history:
+        # Case 1: tuple ("question", "answer")
+        if isinstance(item, tuple) and len(item) == 2:
+            human, ai = item
+            formatted += f"User: {human}\nAssistant: {ai}\n"
+
+        # Case 2: dict {"role": "...", "content": "..."}
+        elif isinstance(item, dict):
+            role = item.get("role", "")
+            content = item.get("content", "")
+            if role == "user":
+                formatted += f"User: {content}\n"
+            elif role == "assistant":
+                formatted += f"Assistant: {content}\n"
+
+        # Case 3: plain string
+        elif isinstance(item, str):
+            formatted += f"{item}\n"
+
     return formatted
 
 

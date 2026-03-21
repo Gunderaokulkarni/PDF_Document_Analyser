@@ -53,21 +53,10 @@ def get_vector_store(text_chunks):
 # FORMAT CHAT HISTORY
 # -----------------------------
 def format_chat_history(chat_history):
-    if not chat_history:
-        return ""
-
-    formatted = ""
-
-    for msg in chat_history:
-        if isinstance(msg, dict):
-            role = msg.get("role")
-            content = msg.get("content")
-
-            if role == "user":
-                formatted += f"User: {content}\n"
-            elif role == "assistant":
-                formatted += f"Assistant: {content}\n"
-
+    formatted = []
+    for human, ai in chat_history:
+        formatted.append({"role": "user", "content": human})
+        formatted.append({"role": "assistant", "content": ai})
     return formatted
 
 
@@ -93,7 +82,7 @@ def get_conversational_chain():
     """
 
     model = ChatGroq(
-        model_name="llama3-8b-8192",
+        model_name="qwen/qwen3-32b",
         temperature=0.3,
         api_key=os.getenv("GROQ_API_KEY")
     )
@@ -136,10 +125,10 @@ def user_input(user_question, chat_history):
 
     chain = get_conversational_chain()
 
-    response = chain.invoke({
-        "chat_history": format_chat_history(chat_history),
-        "context": context,
-        "question": user_question
-    })
+    chain.invoke({
+    "context": context,
+    "chat_history": chat_history,
+    "question": user_question
+})
 
     return response

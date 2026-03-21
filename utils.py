@@ -82,7 +82,6 @@ def get_conversational_chain():
 # USER QUERY
 # -----------------------------
 def user_input(user_question, chat_history):
-    
 
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -99,15 +98,15 @@ def user_input(user_question, chat_history):
         allow_dangerous_deserialization=True
     )
 
-    docs = db.similarity_search(user_question)
+    retriever = db.as_retriever(search_kwargs={"k": 3})
+    docs = retriever.get_relevant_documents(user_question)
 
-    # ✅ Convert docs → string
     context = "\n".join([doc.page_content for doc in docs])
 
     chain = get_conversational_chain()
 
     response = chain.invoke({
-        "chat_history": chat_history,
+        "chat_history": format_chat_history(chat_history),  # ✅ FIX
         "context": context,
         "question": user_question
     })

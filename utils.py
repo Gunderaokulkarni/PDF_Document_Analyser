@@ -111,7 +111,7 @@ def user_input(user_question, chat_history):
     chain = get_conversational_chain()
 
     response = chain.invoke({
-        "chat_history": chat_history,
+        "chat_history": format_chat_history(chat_history),
         "context": context,
         "question": user_question
     })

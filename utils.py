@@ -1,7 +1,7 @@
 from pypdf import PdfReader
 from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -81,32 +81,22 @@ def format_chat_history(chat_history):
 # -----------------------------
 def get_conversational_chain():
 
-    prompt_template = """
-    Answer the question using the provided context.
-    If the answer is not in the context, say:
-    "Answer is not available in the context."
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", 
+         "Answer the question using the provided context. "
+         "If the answer is not in the context, say: "
+         "'Answer is not available in the context.'"),
 
-    Chat History:
-    {chat_history}
-
-    Context:
-    {context}
-
-    Question:
-    {question}
-
-    Answer:
-    """
+        ("user", 
+         "Chat History:\n{chat_history}\n\n"
+         "Context:\n{context}\n\n"
+         "Question:\n{question}")
+    ])
 
     model = ChatGroq(
         model="qwen/qwen3-32b",
         temperature=0.3,
         api_key=os.getenv("GROQ_API_KEY")
-    )
-
-    prompt = PromptTemplate(
-        template=prompt_template,
-        input_variables=["chat_history", "context", "question"]
     )
 
     chain = prompt | model | StrOutputParser()

@@ -111,10 +111,9 @@ def user_input(user_question, chat_history):
     )
 
     retriever = db.as_retriever(search_kwargs={"k": 5})
-    docs = retriever.get_relevant_documents(user_question)
+    docs = retriever.invoke(user_question)
 
     context = "\n".join([doc.page_content for doc in docs])
-
     chain = get_conversational_chain()
 
     response = chain.invoke({

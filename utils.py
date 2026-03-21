@@ -37,7 +37,7 @@ def get_text_chunks(text):
 # -----------------------------
 def get_vector_store(text_chunks):
     embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name="mistralai/Mistral-7B-Instruct-v0.2"
     )
 
     db = FAISS.from_texts(text_chunks, embeddings)

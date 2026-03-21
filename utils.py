@@ -95,7 +95,7 @@ def user_input(user_question, chat_history):
         return "Please enter a valid question."
 
     embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-mpnet-base-v"
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
     if not os.path.exists("faiss_index"):

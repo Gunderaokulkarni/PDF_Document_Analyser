@@ -5,8 +5,21 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
+from dotenv import load_dotenv
 import os
-from config import load_dotenv
+
+load_dotenv()
+
+# -----------------------------
+# FORMAT CHAT HISTORY ✅ (GLOBAL)
+# -----------------------------
+def format_chat_history(chat_history):
+    formatted = ""
+    for human, ai in chat_history:
+        formatted += f"User: {human}\nAssistant: {ai}\n"
+    return formatted
+
+
 # -----------------------------
 # PDF TEXT
 # -----------------------------
@@ -23,7 +36,10 @@ def get_pdf_text(pdf_docs):
 # CHUNKING
 # -----------------------------
 def get_text_chunks(text):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=250)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=250
+    )
     return splitter.split_text(text)
 
 
@@ -46,16 +62,28 @@ def get_vector_store(text_chunks):
 # -----------------------------
 def get_conversational_chain():
 
-    def format_chat_history(chat_history):
-    formatted = ""
-    for human, ai in chat_history:
-        formatted += f"User: {human}\nAssistant: {ai}\n"
-    return formatted
-   
+    prompt_template = """
+    You are an AI assistant.
+
+    Rules:
+    - Answer ONLY from the given context
+    - If not found, say: "answer is not available in the context"
+
+    Chat History:
+    {chat_history}
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Answer:
+    """
+
     model = ChatGroq(
-        model_name="llama-3.1-8b-instant",
-        temperature=0.5,
-        api_key=os.getenv("GROQ_API_KEY")   # BEST PRACTICE
+        model_name="llama3-8b-8192",  # ✅ safer model
+        temperature=0.5
     )
 
     prompt = PromptTemplate(
@@ -89,14 +117,16 @@ def user_input(user_question, chat_history):
     )
 
     retriever = db.as_retriever(search_kwargs={"k": 3})
-    docs = retriever.get_relevant_documents(user_question)
+
+    # ✅ FIX: use invoke()
+    docs = retriever.invoke(user_question)
 
     context = "\n".join([doc.page_content for doc in docs])
 
     chain = get_conversational_chain()
 
     response = chain.invoke({
-        "chat_history": format_chat_history(chat_history),  # ✅ FIX
+        "chat_history": format_chat_history(chat_history),
         "context": context,
         "question": user_question
     })

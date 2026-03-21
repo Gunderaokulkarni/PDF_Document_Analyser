@@ -1,3 +1,4 @@
+from PyPDF2 import PdfReader
 from pypdf import PdfReader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
@@ -5,21 +6,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
-
-# -----------------------------
-# FORMAT CHAT HISTORY ✅ (GLOBAL)
-# -----------------------------
-def format_chat_history(chat_history):
-    formatted = ""
-    for human, ai in chat_history:
-        formatted += f"User: {human}\nAssistant: {ai}\n"
-    return formatted
-
-
+from config import load_dotenv
 # -----------------------------
 # PDF TEXT
 # -----------------------------
@@ -38,7 +26,7 @@ def get_pdf_text(pdf_docs):
 def get_text_chunks(text):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=250
+        chunk_overlap=200
     )
     return splitter.split_text(text)
 
@@ -63,11 +51,8 @@ def get_vector_store(text_chunks):
 def get_conversational_chain():
 
     prompt_template = """
-    You are an AI assistant.
-
-    Rules:
-    - Answer ONLY from the given context
-    - If not found, say: "answer is not available in the context"
+    Answer the question using the provided context.
+    If answer is not in context, say "answer is not available in the context".
 
     Chat History:
     {chat_history}
@@ -80,10 +65,11 @@ def get_conversational_chain():
 
     Answer:
     """
-
+   
     model = ChatGroq(
-        model_name="llama3-8b-8192",  # ✅ safer model
-        temperature=0.5
+        model_name="llama-3.1-8b-instant",
+        temperature=0.5,
+        api_key=os.getenv("GROQ_API_KEY")   # BEST PRACTICE
     )
 
     prompt = PromptTemplate(
@@ -100,6 +86,7 @@ def get_conversational_chain():
 # USER QUERY
 # -----------------------------
 def user_input(user_question, chat_history):
+    
 
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -116,17 +103,15 @@ def user_input(user_question, chat_history):
         allow_dangerous_deserialization=True
     )
 
-    retriever = db.as_retriever(search_kwargs={"k": 3})
+    docs = db.similarity_search(user_question)
 
-    # ✅ FIX: use invoke()
-    docs = retriever.invoke(user_question)
-
+    # ✅ Convert docs → string
     context = "\n".join([doc.page_content for doc in docs])
 
     chain = get_conversational_chain()
 
     response = chain.invoke({
-        "chat_history": format_chat_history(chat_history),
+        "chat_history": chat_history,
         "context": context,
         "question": user_question
     })

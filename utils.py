@@ -1,5 +1,5 @@
-
 from pypdf import PdfReader
+from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -7,7 +7,11 @@ from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 import os
-from config import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+
 # -----------------------------
 # PDF TEXT
 # -----------------------------
@@ -44,15 +48,29 @@ def get_vector_store(text_chunks):
     save_path = os.path.join(os.getcwd(), "faiss_index")
     db.save_local(save_path)
 
+
+# -----------------------------
+# FORMAT CHAT HISTORY
+# -----------------------------
 def format_chat_history(chat_history):
     if not chat_history:
         return ""
 
     formatted = ""
-    for human, ai in chat_history:
-        formatted += f"User: {human}\nAssistant: {ai}\n"
+
+    for msg in chat_history:
+        if isinstance(msg, dict):
+            role = msg.get("role")
+            content = msg.get("content")
+
+            if role == "user":
+                formatted += f"User: {content}\n"
+            elif role == "assistant":
+                formatted += f"Assistant: {content}\n"
 
     return formatted
+
+
 # -----------------------------
 # CHAIN
 # -----------------------------
@@ -73,11 +91,11 @@ def get_conversational_chain():
 
     Answer:
     """
-   
+
     model = ChatGroq(
         model_name="llama-3.1-8b-instant",
         temperature=0.5,
-        api_key=os.getenv("GROQ_API_KEY")   # BEST PRACTICE
+        api_key=os.getenv("GROQ_API_KEY")
     )
 
     prompt = PromptTemplate(
@@ -110,10 +128,12 @@ def user_input(user_question, chat_history):
         allow_dangerous_deserialization=True
     )
 
+    # ✅ NEW STYLE (LangChain latest)
     retriever = db.as_retriever(search_kwargs={"k": 5})
     docs = retriever.invoke(user_question)
 
     context = "\n".join([doc.page_content for doc in docs])
+
     chain = get_conversational_chain()
 
     response = chain.invoke({

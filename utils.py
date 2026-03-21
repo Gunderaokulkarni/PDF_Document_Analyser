@@ -94,9 +94,7 @@ def user_input(user_question, chat_history):
     if not user_question.strip():
         return "Please enter a valid question."
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    embeddings = HuggingFaceEmbeddings( model_name="mistralai/Mistral-7B-Instruct-v0.2")
 
     if not os.path.exists("faiss_index"):
         return "Please upload and process a PDF first."

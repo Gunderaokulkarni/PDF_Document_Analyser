@@ -76,7 +76,7 @@ def get_conversational_chain():
     ])
 
     model = ChatGroq(
-        model="mixtral-8x7b-32768",
+        model="Qwen3-32B",
         temperature=0.3,
         api_key=GROQ_API_KEY
     )

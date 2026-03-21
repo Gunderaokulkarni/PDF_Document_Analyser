@@ -44,7 +44,15 @@ def get_vector_store(text_chunks):
     save_path = os.path.join(os.getcwd(), "faiss_index")
     db.save_local(save_path)
 
+def format_chat_history(chat_history):
+    if not chat_history:
+        return ""
 
+    formatted = ""
+    for human, ai in chat_history:
+        formatted += f"User: {human}\nAssistant: {ai}\n"
+
+    return formatted
 # -----------------------------
 # CHAIN
 # -----------------------------
@@ -86,7 +94,6 @@ def get_conversational_chain():
 # USER QUERY
 # -----------------------------
 def user_input(user_question, chat_history):
-    
 
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -103,9 +110,9 @@ def user_input(user_question, chat_history):
         allow_dangerous_deserialization=True
     )
 
-    docs = db.similarity_search(user_question)
+    retriever = db.as_retriever(search_kwargs={"k": 5})
+    docs = retriever.get_relevant_documents(user_question)
 
-    # ✅ Convert docs → string
     context = "\n".join([doc.page_content for doc in docs])
 
     chain = get_conversational_chain()
